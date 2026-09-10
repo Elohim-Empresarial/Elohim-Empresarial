@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elohim Empresarial - Sistema de Control y Evaluación Crediticia</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0d0d0f',
+                            card: '#16161a',
+                            border: '#2a2a32',
+                            red: '#dc2626',
+                            redHover: '#b91c1c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0d0d0f; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
+        .card-dark { background-color: #16161a; border: 1px solid #2a2a32; }
+        .card-dark:hover { border-color: rgba(220, 38, 38, 0.4); }
+        .input-dark { background-color: #0d0d0f; border: 1px solid #2a2a32; color: #ffffff; }
+        .input-dark:focus { border-color: #dc2626; outline: none; box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2); }
+        .btn-red { background-color: #dc2626; color: white; transition: all 0.2s ease; }
+        .btn-red:hover { background-color: #b91c1c; box-shadow: 0 0 12px rgba(220, 38, 38, 0.4); }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- HEADER / BARRA SUPERIOR -->
+    <header class="bg-[#16161a] border-b border-[#2a2a32] sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-red-600 text-white font-black text-xl px-3 py-1 rounded shadow-lg tracking-wider">
+                    ELOHIM
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white tracking-wide">ELOHIM EMPRESARIAL</h1>
+                    <p class="text-xs text-gray-400">Control de Créditos & Evaluación Financiera</p>
+                </div>
+            </div>
+
+            <!-- Selector de Rol & Estado Sync -->
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 bg-[#0d0d0f] px-3 py-1.5 rounded-lg border border-[#2a2a32]">
+                    <span class="text-xs text-gray-400">Rol:</span>
+                    <select id="user-role-select" onchange="cambiarRolAcceso(this.value)" class="bg-transparent text-xs font-bold text-red-500 focus:outline-none cursor-pointer">
+                        <option value="ADMIN" class="bg-[#16161a] text-white">Administrador / Gerencia</option>
+                        <option value="COBRADOR" class="bg-[#16161a] text-white">Usuario / Cobrador de Ruta</option>
+                    </select>
+                </div>
+
+                <div id="sync-status" class="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-3 py-1.5 rounded-lg">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Firebase: Conectando...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="max-w-7xl mx-auto px-4 mt-6">
+        <div class="flex border-b border-[#2a2a32] space-x-2">
+            <button id="tab-btn-dashboard" type="button" onclick="switchTab('dashboard')" class="tab-btn py-3 px-6 text-sm font-bold border-b-2 border-red-600 text-red-500 flex items-center gap-2">
+                📊 Dashboard General
+            </button>
+            <button id="tab-btn-ruta" type="button" onclick="switchTab('ruta')" class="tab-btn py-3 px-6 text-sm font-bold border-b-2 border-transparent text-gray-400 hover:text-white flex items-center gap-2">
+                🏍️ Ruta de Cobro
+            </button>
+            <button id="tab-btn-clientes" type="button" onclick="switchTab('clientes')" class="tab-btn admin-only py-3 px-6 text-sm font-bold border-b-2 border-transparent text-gray-400 hover:text-white flex items-center gap-2">
+                👥 Cartera de Clientes
+            </button>
+            <button id="tab-btn-evaluacion" type="button" onclick="switchTab('evaluacion')" class="tab-btn py-3 px-6 text-sm font-bold border-b-2 border-transparent text-gray-400 hover:text-white flex items-center gap-2">
+                📋 Evaluación & Solicitud
+            </button>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="max-w-7xl mx-auto px-4 mt-6">
+
+        <!-- 1. VISTA: DASHBOARD GENERAL -->
+        <section id="view-dashboard" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="card-dark p-5 rounded-xl">
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Cobros Recuperados</p>
+                    <h3 id="dash-cobros-hoy" class="text-2xl font-black text-white mt-1">Q0.00</h3>
+                    <p class="text-xs text-emerald-400 mt-2">Recaudado en caja</p>
+                </div>
+                <div class="card-dark p-5 rounded-xl">
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Capital Colocado</p>
+                    <h3 id="dash-capital-invertido" class="text-2xl font-black text-white mt-1">Q0.00</h3>
+                    <p class="text-xs text-gray-400 mt-2">Monto total financiado</p>
+                </div>
+                <div class="card-dark p-5 rounded-xl">
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Saldo Pendiente (C+I)</p>
+                    <h3 id="dash-saldo-pendiente" class="text-2xl font-black text-red-500 mt-1">Q0.00</h3>
+                    <p class="text-xs text-red-400 mt-2">Saldo total por recuperar</p>
+                </div>
+                <div class="card-dark p-5 rounded-xl">
+                    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Mora / Capital Quebrado</p>
+                    <h3 id="dash-capital-quebrado" class="text-2xl font-black text-amber-500 mt-1">Q0.00</h3>
+                    <p class="text-xs text-amber-400 mt-2">Atrasos de cobro acumulados</p>
+                </div>
+            </div>
+
+            <div class="card-dark p-6 rounded-xl">
+                <h2 class="text-lg font-bold text-white mb-4 border-b border-[#2a2a32] pb-2">Panel Ejecutivo Elohim Empresarial</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button type="button" onclick="switchTab('evaluacion')" class="p-4 bg-[#0d0d0f] border border-[#2a2a32] rounded-lg hover:border-red-600 text-left transition-all">
+                        <span class="text-xl">📝</span>
+                        <h4 class="font-bold text-white mt-2">Nueva Evaluación de Crédito</h4>
+                        <p class="text-xs text-gray-400 mt-1">Calcular score financiero y registrar solicitud</p>
+                    </button>
+                    <button type="button" onclick="switchTab('ruta')" class="p-4 bg-[#0d0d0f] border border-[#2a2a32] rounded-lg hover:border-red-600 text-left transition-all">
+                        <span class="text-xl">🏍️</span>
+                        <h4 class="font-bold text-white mt-2">Iniciar Ruta de Cobro</h4>
+                        <p class="text-xs text-gray-400 mt-1">Registrar abonos o mora diaria</p>
+                    </button>
+                    <button type="button" onclick="switchTab('clientes')" class="admin-only p-4 bg-[#0d0d0f] border border-[#2a2a32] rounded-lg hover:border-red-600 text-left transition-all">
+                        <span class="text-xl">👥</span>
+                        <h4 class="font-bold text-white mt-2">Directorio de Clientes</h4>
+                        <p class="text-xs text-gray-400 mt-1">Administrar la base de datos de créditos</p>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. VISTA: RUTA DE COBRO DIARIO -->
+        <section id="view-ruta" class="tab-content hidden">
+            <div class="card-dark p-6 rounded-xl mb-6">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Ruta de Cobro Activa</h2>
+                        <p class="text-xs text-gray-400">Control de cobros y estados de pago en tiempo real</p>
+                    </div>
+                    <input type="text" id="search-ruta-input" onkeyup="filtrarRuta(this.value)" placeholder="Buscar por nombre o DPI..." class="input-dark px-4 py-2 rounded-lg text-sm w-full md:w-64">
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-[#0d0d0f] text-gray-400 text-xs uppercase border-b border-[#2a2a32]">
+                            <tr>
+                                <th class="p-3">Cliente</th>
+                                <th class="p-3">Plan / Plazo</th>
+                                <th class="p-3">Cuota Diaria</th>
+                                <th class="p-3">Estado Actual</th>
+                                <th class="p-3 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-ruta-body" class="divide-y divide-[#2a2a32]">
+                            <!-- Dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. VISTA: CARTERA DE CLIENTES -->
+        <section id="view-clientes" class="tab-content hidden">
+            <div class="card-dark p-6 rounded-xl">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Directorio de Clientes</h2>
+                        <p class="text-xs text-gray-400">Expedientes registrados en la nube</p>
+                    </div>
+                    <button type="button" onclick="abrirModalCrearCliente()" class="btn-red px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+                        <span>+</span> Crear Cliente
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-[#0d0d0f] text-gray-400 text-xs uppercase border-b border-[#2a2a32]">
+                            <tr>
+                                <th class="p-3">Cliente / DPI</th>
+                                <th class="p-3">Monto Capital</th>
+                                <th class="p-3">Tasa Interés</th>
+                                <th class="p-3">Estado Crédito</th>
+                                <th class="p-3 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-clientes-body" class="divide-y divide-[#2a2a32]">
+                            <!-- Dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. VISTA: EVALUACIÓN Y SOLICITUD DE CRÉDITO -->
+        <section id="view-evaluacion" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Formulario de Evaluación -->
+                <div class="lg:col-span-2 card-dark p-6 rounded-xl">
+                    <h2 class="text-xl font-bold text-white mb-1">Solicitud & Evaluación de Crédito</h2>
+                    <p class="text-xs text-gray-400 mb-6">Calculadora de riesgo y credit scoring</p>
+
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Nombre Completo</label>
+                                <input type="text" id="sol_nombre" placeholder="Ej: Débora Coc Caal" class="input-dark w-full p-2.5 rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">DPI / Cédula</label>
+                                <input type="text" id="sol_dpi" placeholder="3357 66528 1616" class="input-dark w-full p-2.5 rounded-lg text-sm">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Dirección</label>
+                                <input type="text" id="sol_direccion" placeholder="Fray Bartolomé de las Casas" class="input-dark w-full p-2.5 rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Teléfono</label>
+                                <input type="text" id="sol_telefono" placeholder="4695-4174" class="input-dark w-full p-2.5 rounded-lg text-sm">
+                            </div>
+                        </div>
+
+                        <div class="border-t border-[#2a2a32] pt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Monto Solicitado (Q)</label>
+                                <input type="number" id="sol_monto" value="4000" oninput="calcularScore()" class="input-dark w-full p-2.5 rounded-lg text-sm font-bold text-red-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Tasa Interés (%)</label>
+                                <input type="number" id="sol_tasa" value="15" step="1" oninput="calcularScore()" class="input-dark w-full p-2.5 rounded-lg text-sm font-bold text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Plazo (Días)</label>
+                                <input type="number" id="sol_plazo" value="44" oninput="calcularScore()" class="input-dark w-full p-2.5 rounded-lg text-sm font-bold text-white">
+                            </div>
+                        </div>
+
+                        <div class="border-t border-[#2a2a32] pt-4 space-y-4">
+                            <h3 class="text-sm font-bold text-red-500 uppercase tracking-wider">Evaluación Socioeconómica</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Tipo de Residencia</label>
+                                    <select id="eval_vivienda" onchange="calcularScore()" class="input-dark w-full p-2.5 rounded-lg text-sm">
+                                        <option value="10">Propia (10 pts)</option>
+                                        <option value="7">Familiar / Cedida (7 pts)</option>
+                                        <option value="4" selected>Alquilada (4 pts)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Tiempo de Residencia</label>
+                                    <select id="eval_tiempo_residencia" onchange="calcularScore()" class="input-dark w-full p-2.5 rounded-lg text-sm">
+                                        <option value="15">Más de 5 años (15 pts)</option>
+                                        <option value="10" selected>3 a 5 años (10 pts)</option>
+                                        <option value="5">1 a 3 años (5 pts)</option>
+                                        <option value="0">Menos de 1 año (0 pts)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Ingresos Mensuales Netos (Q)</label>
+                                    <input type="number" id="eval_ingresos" value="6000" oninput="calcularScore()" class="input-dark w-full p-2.5 rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Egresos Básicos Mensuales (Q)</label>
+                                    <input type="number" id="eval_egresos" value="3200" oninput="calcularScore()" class="input-dark w-full p-2.5 rounded-lg text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Resultado Scoring -->
+                <div class="card-dark p-6 rounded-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-white border-b border-[#2a2a32] pb-2">Resultado Scoring</h3>
+                        
+                        <div class="my-6 text-center">
+                            <div id="score-circle" class="w-32 h-32 mx-auto rounded-full border-4 border-emerald-500 flex items-center justify-center bg-[#0d0d0f]">
+                                <div>
+                                    <span id="score-display" class="text-4xl font-black text-white">85</span>
+                                    <span class="block text-xs text-gray-400">/ 100 Pts</span>
+                                </div>
+                            </div>
+                            <h4 id="score-verdict" class="text-lg font-black text-emerald-400 mt-4">CRÉDITO APROBADO</h4>
+                            <p id="score-desc" class="text-xs text-gray-400 mt-1">Capacidad de pago óptima y nivel de riesgo bajo.</p>
+                        </div>
+
+                        <div class="space-y-2 text-xs bg-[#0d0d0f] p-4 rounded-lg border border-[#2a2a32]">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Cuota Diaria Estimada:</span>
+                                <span id="eval-cuota-diaria" class="font-bold text-white">Q104.55</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Monto Total a Devolver:</span>
+                                <span id="eval-monto-total" class="font-bold text-red-500">Q4,600.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <button type="button" id="btn-guardar-eval" onclick="guardarYRegistrarCredito(event)" class="w-full btn-red py-3 rounded-lg font-bold text-sm shadow-lg">
+                            ✅ Aprobar y Registrar en Firebase
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: REGISTRAR ABONO / ATRASO -->
+    <div id="modal-operacion" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="card-dark p-6 rounded-xl max-w-md w-full mx-4 border-red-600/50">
+            <h3 id="modal-op-title" class="text-lg font-bold text-white mb-2">Registrar Transacción</h3>
+            <p id="modal-op-cliente" class="text-xs text-gray-400 mb-4">Cliente: -</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Monto recibido / Abono (Q)</label>
+                    <input type="number" id="op_monto" class="input-dark w-full p-2.5 rounded-lg text-lg font-bold text-emerald-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Días en Atraso adicionales</label>
+                    <input type="number" id="op_atraso_dias" value="0" class="input-dark w-full p-2.5 rounded-lg text-sm text-amber-400">
+                    <p class="text-[10px] text-gray-500 mt-1">Cláusula Tercera: Q20.00/día de recargo en retrasos mayores a 5 días.</p>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button type="button" onclick="cerrarModalOperacion()" class="w-1/2 bg-[#0d0d0f] border border-[#2a2a32] text-gray-300 py-2.5 rounded-lg text-sm font-bold">Cancelar</button>
+                <button type="button" onclick="confirmarOperacionRuta(event)" class="w-1/2 btn-red py-2.5 rounded-lg text-sm font-bold">Confirmar Pago</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CREAR CLIENTE RÁPIDO -->
+    <div id="modal-crear-cliente" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="card-dark p-6 rounded-xl max-w-lg w-full mx-4 border-red-600/50">
+            <h3 class="text-lg font-bold text-white mb-4">Crear Nuevo Cliente Directo</h3>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Nombre Completo</label>
+                    <input type="text" id="cc_nombre" placeholder="Ej: Juan Pérez" class="input-dark w-full p-2 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">DPI</label>
+                    <input type="text" id="cc_dpi" placeholder="1234 56789 0101" class="input-dark w-full p-2 rounded-lg text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Capital (Q)</label>
+                        <input type="number" id="cc_monto" value="4000" class="input-dark w-full p-2 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Tasa Interés (%)</label>
+                        <input type="number" id="cc_tasa" value="15" class="input-dark w-full p-2 rounded-lg text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Plazo (Días)</label>
+                    <input type="number" id="cc_plazo" value="44" class="input-dark w-full p-2 rounded-lg text-sm">
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button type="button" onclick="cerrarModalCrearCliente()" class="w-1/2 bg-[#0d0d0f] border border-[#2a2a32] text-gray-300 py-2.5 rounded-lg text-sm font-bold">Cancelar</button>
+                <button type="button" id="btn-guardar-rapido" onclick="guardarClienteRapido(event)" class="w-1/2 btn-red py-2.5 rounded-lg text-sm font-bold">Guardar Cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SDK DE FIREBASE MODULAR -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // CREDENCIALES FIREBASE "Gestion De Cobros"
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9FwSp6qY09M7E0HKyK7x6oJp8YT_pUHM",
+            authDomain: "gestion-de-cobros-7c93d.firebaseapp.com",
+            projectId: "gestion-de-cobros-7c93d",
+            storageBucket: "gestion-de-cobros-7c93d.firebasestorage.app",
+            messagingSenderId: "813836435347",
+            appId: "1:813836435347:web:3e1e7e91c555f9fe57b266",
+            measurementId: "G-7MMRT6MG1C"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const clientesRef = collection(db, "clientes");
+
+        window.state = {
+            role: "ADMIN",
+            clientes: [],
+            clienteSeleccionadoId: null
+        };
+
+        // Escuchar cambios de Firestore en tiempo real
+        onSnapshot(clientesRef, (snapshot) => {
+            window.state.clientes = [];
+            snapshot.forEach((documento) => {
+                window.state.clientes.push({ id: documento.id, ...documento.data() });
+            });
+            renderAllViews();
+            document.getElementById('sync-status').innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>Firebase: Sincronizado en Vivo</span>';
+        }, (error) => {
+            console.error("Error en conexión Firebase:", error);
+            document.getElementById('sync-status').innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span><span>Error de Conexión</span>';
+        });
+
+        // Registrar desde Evaluación
+        window.guardarYRegistrarCredito = async function(e) {
+            if(e) e.preventDefault();
+            
+            const btn = document.getElementById('btn-guardar-eval');
+            const nombre = document.getElementById('sol_nombre').value.trim();
+            const dpi = document.getElementById('sol_dpi').value.trim();
+            
+            if(!nombre || !dpi) {
+                alert("Por favor ingrese al menos el Nombre y el DPI del cliente.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "⏳ Guardando en Firebase...";
+
+            const monto = parseFloat(document.getElementById('sol_monto').value) || 4000;
+            const tasaPct = parseFloat(document.getElementById('sol_tasa').value) || 15;
+            const plazo = parseInt(document.getElementById('sol_plazo').value) || 44;
+            const totalDevolver = monto * (1 + (tasaPct / 100));
+            const cuotaDiaria = totalDevolver / plazo;
+
+            try {
+                await addDoc(clientesRef, {
+                    nombre,
+                    dpi,
+                    direccion: document.getElementById('sol_direccion').value.trim() || "Fray Bartolomé de las Casas",
+                    telefono: document.getElementById('sol_telefono').value.trim() || "Sin teléfono",
+                    capital: monto,
+                    tasa: tasaPct / 100,
+                    plazo,
+                    cuotaDiaria,
+                    saldoPendiente: totalDevolver,
+                    totalCobrado: 0,
+                    score: parseInt(document.getElementById('score-display').innerText) || 85,
+                    estadoCredito: "Al día",
+                    cuotaActual: 1,
+                    diasAtraso: 0,
+                    fechaCreacion: new Date().toISOString()
+                });
+
+                alert("¡Cliente guardado exitosamente en Firebase!");
+                document.getElementById('sol_nombre').value = '';
+                document.getElementById('sol_dpi').value = '';
+                switchTab('ruta');
+            } catch (err) {
+                console.error("Error al guardar en Firebase:", err);
+                alert("Ocurrió un error al guardar: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "✅ Aprobar y Registrar en Firebase";
+            }
+        };
+
+        // Crear Cliente Rápido
+        window.guardarClienteRapido = async function(e) {
+            if(e) e.preventDefault();
+
+            const btn = document.getElementById('btn-guardar-rapido');
+            const nombre = document.getElementById('cc_nombre').value.trim();
+            const dpi = document.getElementById('cc_dpi').value.trim();
+
+            if(!nombre || !dpi) {
+                alert("Debe ingresar Nombre y DPI");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
+            const monto = parseFloat(document.getElementById('cc_monto').value) || 4000;
+            const tasaPct = parseFloat(document.getElementById('cc_tasa').value) || 15;
+            const plazo = parseInt(document.getElementById('cc_plazo').value) || 44;
+            const totalDevolver = monto * (1 + (tasaPct / 100));
+
+            try {
+                await addDoc(clientesRef, {
+                    nombre,
+                    dpi,
+                    capital: monto,
+                    tasa: tasaPct / 100,
+                    plazo,
+                    cuotaDiaria: totalDevolver / plazo,
+                    saldoPendiente: totalDevolver,
+                    totalCobrado: 0,
+                    score: 80,
+                    estadoCredito: "Al día",
+                    cuotaActual: 1,
+                    diasAtraso: 0,
+                    fechaCreacion: new Date().toISOString()
+                });
+
+                cerrarModalCrearCliente();
+                document.getElementById('cc_nombre').value = '';
+                document.getElementById('cc_dpi').value = '';
+            } catch(err) {
+                console.error(err);
+                alert("Error al guardar: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Guardar Cliente";
+            }
+        };
+
+        // Confirmar Pago / Operación
+        window.confirmarOperacionRuta = async function(e) {
+            if(e) e.preventDefault();
+            if(!window.state.clienteSeleccionadoId) return;
+
+            const client = window.state.clientes.find(c => c.id === window.state.clienteSeleccionadoId);
+            if(!client) return;
+
+            const abono = parseFloat(document.getElementById('op_monto').value) || 0;
+            const atrasoAdd = parseInt(document.getElementById('op_atraso_dias').value) || 0;
+
+            const nuevoTotalCobrado = (client.totalCobrado || 0) + abono;
+            const nuevoSaldo = Math.max(0, (client.saldoPendiente || (client.capital * 1.15)) - abono);
+            const nuevosDiasAtraso = (client.diasAtraso || 0) + atrasoAdd;
+            
+            let nuevoEstado = "Al día";
+            if(nuevosDiasAtraso > 0) {
+                nuevoEstado = `Mora (Día ${nuevosDiasAtraso})`;
+            }
+
+            try {
+                const docRef = doc(db, "clientes", client.id);
+                await updateDoc(docRef, {
+                    totalCobrado: nuevoTotalCobrado,
+                    saldoPendiente: nuevoSaldo,
+                    diasAtraso: nuevosDiasAtraso,
+                    estadoCredito: nuevoEstado
+                });
+                cerrarModalOperacion();
+            } catch(err) {
+                console.error("Error al actualizar operación:", err);
+                alert("Error al actualizar: " + err.message);
+            }
+        };
+
+        // Eliminar Cliente
+        window.eliminarCliente = async function(id) {
+            if(confirm("¿Está seguro de eliminar este cliente de la base de datos?")) {
+                try {
+                    await deleteDoc(doc(db, "clientes", id));
+                } catch(err) {
+                    console.error("Error al eliminar:", err);
+                    alert("No se pudo eliminar: " + err.message);
+                }
+            }
+        };
+    </script>
+
+    <!-- INTERFAZ LOCAL & RENDER -->
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-red-600', 'text-red-500');
+                el.classList.add('border-transparent', 'text-gray-400');
+            });
+
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            if(activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-gray-400');
+                activeBtn.classList.add('border-red-600', 'text-red-500');
+            }
+        }
+
+        function cambiarRolAcceso(rol) {
+            window.state.role = rol;
+            document.querySelectorAll('.admin-only').forEach(el => {
+                if(rol === 'ADMIN') {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+            if(rol === 'COBRADOR') {
+                switchTab('ruta');
+            }
+        }
+
+        function renderAllViews() {
+            renderDashboardData();
+            renderRutaTable();
+            renderClientsTable();
+        }
+
+        function renderDashboardData() {
+            let totalCobros = 0;
+            let totalCapital = 0;
+            let totalSaldo = 0;
+            let totalMora = 0;
+
+            (window.state.clientes || []).forEach(c => {
+                totalCobros += (c.totalCobrado || 0);
+                totalCapital += (c.capital || 0);
+                totalSaldo += (c.saldoPendiente || 0);
+                if((c.diasAtraso || 0) > 5) {
+                    totalMora += (c.capital || 0) + ((c.diasAtraso - 5) * 20);
+                }
+            });
+
+            document.getElementById('dash-cobros-hoy').innerText = `Q${totalCobros.toFixed(2)}`;
+            document.getElementById('dash-capital-invertido').innerText = `Q${totalCapital.toFixed(2)}`;
+            document.getElementById('dash-saldo-pendiente').innerText = `Q${totalSaldo.toFixed(2)}`;
+            document.getElementById('dash-capital-quebrado').innerText = `Q${totalMora.toFixed(2)}`;
+        }
+
+        function renderRutaTable(filterText = '') {
+            const tbody = document.getElementById('tabla-ruta-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            const list = (window.state.clientes || []).filter(c => 
+                (c.nombre || '').toLowerCase().includes(filterText.toLowerCase()) || 
+                (c.dpi || '').includes(filterText)
+            );
+
+            if(list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">No hay clientes registrados</td></tr>`;
+                return;
+            }
+
+            list.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-[#0d0d0f]/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <div class="font-bold text-white">${c.nombre}</div>
+                        <div class="text-xs text-gray-400">DPI: ${c.dpi}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="text-xs text-gray-300">Q${c.capital} @ ${((c.tasa||0.15)*100).toFixed(0)}%</div>
+                        <div class="text-[10px] text-gray-500">${c.plazo || 44} días</div>
+                    </td>
+                    <td class="p-3 font-bold text-emerald-400">
+                        Q${(c.cuotaDiaria || 0).toFixed(2)}
+                    </td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded text-xs font-bold ${c.diasAtraso > 0 ? 'bg-amber-950 text-amber-400 border border-amber-800' : 'bg-emerald-950 text-emerald-400 border border-emerald-800'}">
+                            ${c.estadoCredito || 'Al día'}
+                        </span>
+                    </td>
+                    <td class="p-3 text-center">
+                        <button type="button" onclick="abrirModalOperacion('${c.id}')" class="btn-red px-3 py-1 rounded text-xs font-bold">
+                            💵 Registrar Pago / Atraso
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderClientsTable() {
+            const tbody = document.getElementById('tabla-clientes-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            const list = window.state.clientes || [];
+            if(list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Sin clientes en el directorio</td></tr>`;
+                return;
+            }
+
+            list.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-white">${c.nombre}<br><span class="text-xs text-gray-400">${c.dpi}</span></td>
+                    <td class="p-3 text-gray-300">Q${c.capital}</td>
+                    <td class="p-3 text-gray-300">${((c.tasa||0.15)*100).toFixed(0)}%</td>
+                    <td class="p-3 text-xs text-emerald-400 font-bold">${c.estadoCredito || 'Al día'}</td>
+                    <td class="p-3 text-center">
+                        <button type="button" onclick="eliminarCliente('${c.id}')" class="text-xs text-red-500 hover:text-red-400 font-bold">🗑️ Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function calcularScore() {
+            const monto = parseFloat(document.getElementById('sol_monto').value) || 4000;
+            const tasa = (parseFloat(document.getElementById('sol_tasa').value) || 15) / 100;
+            const plazo = parseInt(document.getElementById('sol_plazo').value) || 44;
+            
+            const vivPts = parseInt(document.getElementById('eval_vivienda').value) || 4;
+            const tResPts = parseInt(document.getElementById('eval_tiempo_residencia').value) || 10;
+            
+            const ingresos = parseFloat(document.getElementById('eval_ingresos').value) || 1;
+            const egresos = parseFloat(document.getElementById('eval_egresos').value) || 0;
+            
+            const margen = (ingresos - egresos) / ingresos;
+            let capPts = 10;
+            if(margen > 0.4) capPts = 30;
+            else if(margen > 0.2) capPts = 20;
+
+            const totalScore = Math.min(100, vivPts + tResPts + capPts + 40);
+            document.getElementById('score-display').innerText = totalScore;
+            
+            const totalDev = monto * (1 + tasa);
+            const cuota = totalDev / plazo;
+            document.getElementById('eval-cuota-diaria').innerText = `Q${cuota.toFixed(2)}`;
+            document.getElementById('eval-monto-total').innerText = `Q${totalDev.toFixed(2)}`;
+        }
+
+        function abrirModalOperacion(id) {
+            window.state.clienteSeleccionadoId = id;
+            const client = window.state.clientes.find(c => c.id === id);
+            if(!client) return;
+
+            document.getElementById('modal-op-cliente').innerText = `Cliente: ${client.nombre} | Cuota: Q${(client.cuotaDiaria||0).toFixed(2)}`;
+            document.getElementById('op_monto').value = (client.cuotaDiaria||0).toFixed(2);
+            document.getElementById('modal-operacion').classList.remove('hidden');
+        }
+
+        function cerrarModalOperacion() {
+            document.getElementById('modal-operacion').classList.add('hidden');
+        }
+
+        function abrirModalCrearCliente() {
+            document.getElementById('modal-crear-cliente').classList.remove('hidden');
+        }
+
+        function cerrarModalCrearCliente() {
+            document.getElementById('modal-crear-cliente').classList.add('hidden');
+        }
+
+        function filtrarRuta(val) {
+            renderRutaTable(val);
+        }
+
+        window.onload = function() {
+            calcularScore();
+        };
+    </script>
+</body>
+</html>
