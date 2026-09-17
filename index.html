@@ -839,7 +839,7 @@
                         </div>
                         <div>
                             <label class="text-[10px] text-gray-400 block">Nombre Completo</label>
-                            <input type="text" id="doc-inv-nombre" value="Carlos Alberto Morales Ruiz" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
+                            <input type="text" id="doc-inv-nombre" value="" placeholder="Ej. Carlos Alberto Morales Ruiz" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
@@ -858,12 +858,12 @@
                             </div>
                             <div>
                                 <label class="text-[10px] text-gray-400 block">DPI / CUI</label>
-                                <input type="text" id="doc-inv-dpi" value="2450 98765 0101" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
+                                <input type="text" id="doc-inv-dpi" value="" placeholder="Ej. 2450 98765 0101" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
                             </div>
                         </div>
                         <div>
                             <label class="text-[10px] text-gray-400 block">Cuenta Bancaria para Depósitos</label>
-                            <input type="text" id="doc-inv-cuenta" value="Monetaria No. 012-345678-9, Banco Industrial" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
+                            <input type="text" id="doc-inv-cuenta" value="" placeholder="Ej. Monetaria No. 012-345678-9, Banco Industrial" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
                         </div>
                     </div>
 
@@ -871,12 +871,12 @@
                         <strong class="text-red-400 block">3. Datos del Deudor / Receptor del Capital</strong>
                         <div>
                             <label class="text-[10px] text-gray-400 block">Nombre Completo del Deudor</label>
-                            <input type="text" id="doc-deu-nombre" value="Jorge Luis Hernández López" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
+                            <input type="text" id="doc-deu-nombre" value="" placeholder="Ej. Juan Pérez López" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="text-[10px] text-gray-400 block">Edad (Años)</label>
-                                <input type="number" id="doc-deu-edad" value="31" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
+                                <input type="number" id="doc-deu-edad" value="30" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
                             </div>
                             <div>
                                 <label class="text-[10px] text-gray-400 block">Estado Civil</label>
@@ -890,12 +890,12 @@
                             </div>
                             <div>
                                 <label class="text-[10px] text-gray-400 block">DPI / CUI</label>
-                                <input type="text" id="doc-deu-dpi" value="1890 12345 0101" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
+                                <input type="text" id="doc-deu-dpi" value="" placeholder="Ej. 1890 12345 0101" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
                             </div>
                         </div>
                         <div>
                             <label class="text-[10px] text-gray-400 block">Dirección para Notificaciones</label>
-                            <input type="text" id="doc-deu-direccion" value="5ta Avenida 10-20 Zona 4, Ciudad de Guatemala" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
+                            <input type="text" id="doc-deu-direccion" value="" placeholder="Ej. 5ta Avenida 10-20 Zona 4, Guatemala" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs">
                         </div>
                     </div>
 
@@ -904,7 +904,7 @@
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="text-[10px] text-gray-400 block">Monto Total Líquido (Q)</label>
-                                <input type="number" id="doc-monto-total" value="4200" step="100" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs font-bold text-emerald-400">
+                                <input type="number" id="doc-monto-total" value="1200" step="100" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs font-bold text-emerald-400">
                             </div>
                             <div>
                                 <label class="text-[10px] text-gray-400 block">Fecha Vencimiento Total</label>
@@ -927,7 +927,7 @@
                             </div>
                             <div>
                                 <label class="text-[10px] text-gray-400 block">Monto Cuota (Q)</label>
-                                <input type="number" id="doc-monto-cuota" value="175" step="10" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs font-bold">
+                                <input type="number" id="doc-monto-cuota" value="50" step="10" oninput="actualizarDocumentoEnVivo()" class="input-dark text-xs font-bold">
                             </div>
                         </div>
                     </div>
@@ -1060,7 +1060,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global App ID & Official User Firebase Configuration
@@ -1104,15 +1104,16 @@
             onSnapshot(colClientesRef, (snapshot) => {
                 const arr = [];
                 snapshot.forEach(docSnap => {
-                    arr.push({ id: docSnap.id, ...docSnap.data() });
+                    const data = docSnap.data();
+                    if (data.estado !== 'ELIMINADO') {
+                        arr.push({ id: docSnap.id, ...data });
+                    }
                 });
-                if (arr.length > 0) {
-                    arr.sort((a, b) => (a.noCliente || 0) - (b.noCliente || 0));
-                    window.state.clientes = arr;
-                    window.renderizarDashboard();
-                    window.renderizarTablaRuta();
-                    window.renderizarTablaCartera();
-                }
+                arr.sort((a, b) => (a.noCliente || 0) - (b.noCliente || 0));
+                window.state.clientes = arr;
+                window.renderizarDashboard();
+                window.renderizarTablaRuta();
+                window.renderizarTablaCartera();
             }, (err) => console.warn("Sync Clientes Error:", err));
 
             // Real-time listener for Rutas
@@ -1156,6 +1157,7 @@
             if (!db) return;
             try {
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'clientes', clienteId);
+                await setDoc(docRef, { estado: 'ELIMINADO' }, { merge: true });
                 await deleteDoc(docRef);
             } catch (e) {
                 console.warn("Error deleting client from cloud:", e);
@@ -1217,33 +1219,7 @@
                 { id: 'r1', nombre: 'Ruta 1 - Central', clave: '123' },
                 { id: 'r2', nombre: 'Ruta 2 - Norte', clave: '123' }
             ],
-            clientes: [
-                {
-                    id: 'c1',
-                    noCliente: 1,
-                    nombre: 'Jorge Luis Hernández López',
-                    dpi: '1890 12345 0101',
-                    telefono: '50255551234',
-                    direccion: '5ta Avenida 10-20 Zona 4, Ciudad de Guatemala',
-                    gps: '14.6189, -90.5142',
-                    negocio: 'Novedades y Abarrotes Hernández',
-                    ingresos: 6000,
-                    egresos: 3500,
-                    monto: 3500.00,
-                    tasa: 20,
-                    totalPagar: 4200.00,
-                    cuotaDiaria: 175.00,
-                    saldoPendiente: 4200.00,
-                    abonoHoy: 0,
-                    diasPlazo: 24,
-                    rutaId: 'r1',
-                    estado: 'ACTIVO',
-                    score: 90,
-                    ref1: { nombre: 'María Méndez', tel: '55554321' },
-                    ref2: { nombre: 'Pedro López', tel: '55558888' },
-                    fechaInicio: '2026-09-16'
-                }
-            ]
+            clientes: []
         };
 
         function mostrarNotificacion(mensaje, tipo = 'exito') {
@@ -1807,6 +1783,7 @@
             const busqueda = (document.getElementById('filtro-buscar-cartera')?.value || '').toLowerCase();
 
             const lista = window.state.clientes.filter(c => {
+                if (c.estado === 'ELIMINADO') return false;
                 if (busqueda && !c.nombre.toLowerCase().includes(busqueda) && !c.dpi.includes(busqueda)) return false;
                 return true;
             });
@@ -2177,12 +2154,12 @@
         function abrirGeneradorReconocimiento() {
             cargarDatosInversionistaEnConfig();
 
-            if (document.getElementById('doc-deu-nombre')) document.getElementById('doc-deu-nombre').value = document.getElementById('eval-nombre')?.value || 'Jorge Luis Hernández López';
-            if (document.getElementById('doc-deu-dpi')) document.getElementById('doc-deu-dpi').value = document.getElementById('eval-dpi')?.value || '1890 12345 0101';
-            if (document.getElementById('doc-deu-direccion')) document.getElementById('doc-deu-direccion').value = document.getElementById('eval-direccion')?.value || 'Ciudad de Guatemala';
+            if (document.getElementById('doc-deu-nombre')) document.getElementById('doc-deu-nombre').value = document.getElementById('eval-nombre')?.value || '';
+            if (document.getElementById('doc-deu-dpi')) document.getElementById('doc-deu-dpi').value = document.getElementById('eval-dpi')?.value || '';
+            if (document.getElementById('doc-deu-direccion')) document.getElementById('doc-deu-direccion').value = document.getElementById('eval-direccion')?.value || '';
 
-            const totalPagarCalc = parseFloat((document.getElementById('calc-total-pagar')?.textContent || '').replace(/[^\d.]/g, '')) || 4200;
-            const cuotaCalc = parseFloat((document.getElementById('calc-cuota-diaria')?.textContent || '').replace(/[^\d.]/g, '')) || 175;
+            const totalPagarCalc = parseFloat((document.getElementById('calc-total-pagar')?.textContent || '').replace(/[^\d.]/g, '')) || 1200;
+            const cuotaCalc = parseFloat((document.getElementById('calc-cuota-diaria')?.textContent || '').replace(/[^\d.]/g, '')) || 50;
 
             if (document.getElementById('doc-monto-total')) document.getElementById('doc-monto-total').value = totalPagarCalc;
             if (document.getElementById('doc-num-cuotas')) document.getElementById('doc-num-cuotas').value = parseInt(document.getElementById('eval-dias')?.value) || 24;
@@ -2202,9 +2179,9 @@
             if (document.getElementById('doc-deu-nombre')) document.getElementById('doc-deu-nombre').value = c.nombre || '';
             if (document.getElementById('doc-deu-dpi')) document.getElementById('doc-deu-dpi').value = c.dpi || '';
             if (document.getElementById('doc-deu-direccion')) document.getElementById('doc-deu-direccion').value = c.direccion || '';
-            if (document.getElementById('doc-monto-total')) document.getElementById('doc-monto-total').value = c.totalPagar || 4200;
+            if (document.getElementById('doc-monto-total')) document.getElementById('doc-monto-total').value = c.totalPagar || 1200;
             if (document.getElementById('doc-num-cuotas')) document.getElementById('doc-num-cuotas').value = c.diasPlazo || 24;
-            if (document.getElementById('doc-monto-cuota')) document.getElementById('doc-monto-cuota').value = c.cuotaDiaria || 175;
+            if (document.getElementById('doc-monto-cuota')) document.getElementById('doc-monto-cuota').value = c.cuotaDiaria || 50;
 
             const m = document.getElementById('modal-contrato');
             if (m) m.classList.remove('hidden');
@@ -2231,18 +2208,18 @@
             const invDpi = document.getElementById('doc-inv-dpi')?.value || '2450 98765 0101';
             const invCuenta = document.getElementById('doc-inv-cuenta')?.value || 'Monetaria No. 012-345678-9, Banco Industrial';
 
-            const deuNom = document.getElementById('doc-deu-nombre')?.value || 'Jorge Luis Hernández López';
-            const deuEdad = document.getElementById('doc-deu-edad')?.value || '31';
+            const deuNom = document.getElementById('doc-deu-nombre')?.value || 'RECEPTOR DEL CAPITAL';
+            const deuEdad = document.getElementById('doc-deu-edad')?.value || '30';
             const deuEstado = document.getElementById('doc-deu-estado-civil')?.value || 'soltero';
             const deuProf = document.getElementById('doc-deu-profesion')?.value || 'Comerciante';
-            const deuDpi = document.getElementById('doc-deu-dpi')?.value || '1890 12345 0101';
-            const deuDir = document.getElementById('doc-deu-direccion')?.value || '5ta Avenida 10-20 Zona 4, Ciudad de Guatemala';
+            const deuDpi = document.getElementById('doc-deu-dpi')?.value || 'DOCUMENTO DE IDENTIFICACIÓN';
+            const deuDir = document.getElementById('doc-deu-direccion')?.value || 'Ciudad de Guatemala';
 
-            const montoNum = parseFloat(document.getElementById('doc-monto-total')?.value) || 4200;
+            const montoNum = parseFloat(document.getElementById('doc-monto-total')?.value) || 1200;
             const montoLetras = numeroALetras(montoNum);
             const numCuotas = document.getElementById('doc-num-cuotas')?.value || '24';
             const frecCuotas = document.getElementById('doc-frecuencia-cuotas')?.value || 'diarias (L-V)';
-            const montoCuota = parseFloat(document.getElementById('doc-monto-cuota')?.value) || 175;
+            const montoCuota = parseFloat(document.getElementById('doc-monto-cuota')?.value) || 50;
             const fechaVenc = document.getElementById('doc-fecha-venc')?.value || '20 de octubre de 2026';
 
             container.innerHTML = `
@@ -2353,12 +2330,12 @@
         }
 
         function imprimirDictamenScoring() {
-            const nombre = document.getElementById('eval-nombre')?.value || 'Jorge Luis Hernández López';
-            const dpi = document.getElementById('eval-dpi')?.value || '1890 12345 0101';
+            const nombre = document.getElementById('eval-nombre')?.value || 'SOLICITANTE DE CRÉDITO';
+            const dpi = document.getElementById('eval-dpi')?.value || 'DPI / CUI';
             const dir = document.getElementById('eval-direccion')?.value || 'Ciudad de Guatemala';
             const score = document.getElementById('score-number-display')?.textContent || '90';
             const badge = document.getElementById('score-veredicto-badge')?.textContent || 'APROBADO';
-            const desc = document.getElementById('score-veredicto-desc')?.textContent || 'Cliente de bajo riesgo.';
+            const desc = document.getElementById('score-veredicto-desc')?.textContent || 'Cliente evaluado.';
 
             const printWin = window.open('', '_blank', 'width=850,height=1100');
             printWin.document.write(`
