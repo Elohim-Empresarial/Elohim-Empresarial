@@ -57,7 +57,6 @@
 
             body * { visibility: hidden !important; }
 
-            /* Ensure print containers and parent backdrops remain visible during printing */
             body.imprimiendo-contrato #modal-contrato,
             body.imprimiendo-contrato #modal-contrato *,
             body.imprimiendo-reporte #modal-reporte-diario,
@@ -158,8 +157,8 @@
                 <div class="flex items-center gap-2 bg-[#0d0d0f] px-3 py-1.5 rounded-lg border border-[#2a2a32]">
                     <span class="text-xs text-gray-400">Sesión:</span>
                     <span id="label-sesion-actual" class="text-xs font-bold text-red-500">ADMINISTRADOR</span>
-                    <button type="button" onclick="abrirModalLogin()" class="ml-1 text-[11px] bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white px-2 py-0.5 rounded transition font-bold">
-                        🔒 Cambiar
+                    <button type="button" onclick="cerrarSesion()" class="ml-1 text-[11px] bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white px-2 py-0.5 rounded transition font-bold flex items-center gap-1">
+                        🚪 Cerrar Sesión
                     </button>
                 </div>
 
@@ -1063,9 +1062,10 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global App ID & Official User Firebase Configuration
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'elohim-empresarial-v1';
-        const defaultFirebaseConfig = {
+        
+        /* Credenciales del Proyecto Firebase */
+        const firebaseConfig = {
             apiKey: "AIzaSyA9FwSp6qY09M7E0HKyK7x6oJp8YT_pUHM",
             authDomain: "gestion-de-cobros-7c93d.firebaseapp.com",
             projectId: "gestion-de-cobros-7c93d",
@@ -1074,8 +1074,6 @@
             appId: "1:813836435347:web:3e1e7e91c555f9fe57b266",
             measurementId: "G-7MMRT6MG1C"
         };
-        
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
 
         let app, db, auth;
         try {
@@ -1083,10 +1081,9 @@
             db = getFirestore(app);
             auth = getAuth(app);
         } catch (e) {
-            console.warn("Firebase Initialized:", e);
+            console.warn("Firebase Init status:", e);
         }
 
-        // Initialize Firebase Authentication & Realtime Firestore Listeners
         async function iniciarCloudSync() {
             if (!auth || !db) return;
             try {
@@ -1141,18 +1138,17 @@
             }, (err) => console.warn("Sync Config Error:", err));
         }
 
-        // Helper to save client mutation to Cloud
+        /* Operaciones de Firebase en la nube */
         window.guardarClienteCloud = async function(clienteObj) {
             if (!db) return;
             try {
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'clientes', clienteObj.id);
                 await setDoc(docRef, clienteObj, { merge: true });
             } catch (e) {
-                console.warn("Error saving client to cloud:", e);
+                console.warn("Error al guardar cliente en nube:", e);
             }
         };
 
-        // Helper to delete client from Cloud
         window.eliminarClienteCloud = async function(clienteId) {
             if (!db) return;
             try {
@@ -1160,40 +1156,37 @@
                 await setDoc(docRef, { estado: 'ELIMINADO' }, { merge: true });
                 await deleteDoc(docRef);
             } catch (e) {
-                console.warn("Error deleting client from cloud:", e);
+                console.warn("Error al eliminar cliente de la nube:", e);
             }
         };
 
-        // Helper to save route to Cloud
         window.guardarRutaCloud = async function(rutaObj) {
             if (!db) return;
             try {
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rutas', rutaObj.id);
                 await setDoc(docRef, rutaObj, { merge: true });
             } catch (e) {
-                console.warn("Error saving route to cloud:", e);
+                console.warn("Error al guardar ruta en nube:", e);
             }
         };
 
-        // Helper to delete route from Cloud
         window.eliminarRutaCloud = async function(rutaId) {
             if (!db) return;
             try {
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'rutas', rutaId);
                 await deleteDoc(docRef);
             } catch (e) {
-                console.warn("Error deleting route from cloud:", e);
+                console.warn("Error al eliminar ruta de la nube:", e);
             }
         };
 
-        // Helper to save investor profile to Cloud
         window.guardarInversionistaCloud = async function(invObj) {
             if (!db) return;
             try {
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'inversionista');
                 await setDoc(docRef, invObj, { merge: true });
             } catch (e) {
-                console.warn("Error saving investor config to cloud:", e);
+                console.warn("Error al guardar configuración de inversionista en nube:", e);
             }
         };
 
@@ -1208,12 +1201,12 @@
             claveAdmin: 'admin123',
             rutaEdicionId: null,
             datosInversionista: {
-                nombre: 'Carlos Alberto Morales Ruiz',
-                edad: '42',
-                estadoCivil: 'casado',
-                profesion: 'Empresario',
-                dpi: '2450 98765 0101',
-                cuenta: 'Monetaria No. 012-345678-9, Banco Industrial'
+                nombre: '',
+                edad: '',
+                estadoCivil: '',
+                profesion: '',
+                dpi: '',
+                cuenta: ''
             },
             rutas: [
                 { id: 'r1', nombre: 'Ruta 1 - Central', clave: '123' },
@@ -1243,7 +1236,7 @@
         }
 
         function numeroALetras(num) {
-            const unidades = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte', 'veintiuno', 'veintidós', 'veintitrés', 'veinticuatro', 'veinticinco', 'veintiséis', 'veintisiete', 'veintinueve'];
+            const unidades = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte', 'veintiuno', 'veintidós', 'veintitrés', 'veinticinco', 'veintiséis', 'veintisiete', 'veintinueve'];
             const decenas = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
             const centenas = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
 
@@ -1296,6 +1289,16 @@
         function cerrarModalLogin() {
             const m = document.getElementById('modal-login');
             if (m) m.classList.add('hidden');
+        }
+
+        function cerrarSesion() {
+            mostrarNotificacion("Sincronizando y cerrando sesión...");
+            setTimeout(() => {
+                window.state.rolActual = null;
+                window.state.rutaActivaId = 'TODAS';
+                abrirModalLogin();
+                mostrarNotificacion("Sesión cerrada. Información resguardada en Firebase.");
+            }, 500);
         }
 
         function alternarCamposLogin() {
@@ -1901,6 +1904,7 @@
             const idx = window.state.clientes.findIndex(x => x.id === clienteId);
             if (idx !== -1) {
                 const nom = window.state.clientes[idx].nombre;
+                window.state.clientes[idx].estado = 'ELIMINADO';
                 window.state.clientes.splice(idx, 1);
                 if (window.eliminarClienteCloud) window.eliminarClienteCloud(clienteId);
                 renderizarDashboard();
@@ -2201,7 +2205,7 @@
             const mes = document.getElementById('doc-mes')?.value || 'septiembre';
             const anio = document.getElementById('doc-anio')?.value || '2026';
 
-            const invNom = document.getElementById('doc-inv-nombre')?.value || 'Carlos Alberto Morales Ruiz';
+            const invNom = document.getElementById('doc-inv-nombre')?.value || 'CARLOS ALBERTO MORALES RUIZ';
             const invEdad = document.getElementById('doc-inv-edad')?.value || '42';
             const invEstado = document.getElementById('doc-inv-estado-civil')?.value || 'casado';
             const invProf = document.getElementById('doc-inv-profesion')?.value || 'Empresario';
@@ -2591,7 +2595,6 @@
             printWin.document.close();
         }
 
-        // Expose functions globally to window object for bulletproof event handling
         window.cerrarModalContrato = cerrarModalContrato;
         window.abrirGeneradorReconocimiento = abrirGeneradorReconocimiento;
         window.abrirGeneradorReconocimientoConCliente = abrirGeneradorReconocimientoConCliente;
@@ -2612,6 +2615,7 @@
         window.alternarCamposLogin = alternarCamposLogin;
         window.abrirModalLogin = abrirModalLogin;
         window.cerrarModalLogin = cerrarModalLogin;
+        window.cerrarSesion = cerrarSesion;
         window.cambiarPestana = cambiarPestana;
         window.marcarCastigoDeuda = marcarCastigoDeuda;
         window.reactivarCliente = reactivarCliente;
