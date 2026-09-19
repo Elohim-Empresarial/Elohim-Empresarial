@@ -2296,21 +2296,21 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN DE AUTÉNTICA NOTARIAL - MAYOR ESPACIADO -->
-                        <div class="border-t-2 border-dashed border-gray-400 pt-8 mt-6">
+                        <!-- SECCIÓN DE AUTÉNTICA NOTARIAL - MAYOR ESPACIADO GARANTIZADO DE MÁS DE 120PX PARA FIRMAS FÍSICAS Y SELLO -->
+                        <div class="border-t-2 border-dashed border-gray-400 pt-8 mt-8">
                             <p class="font-bold uppercase text-center mb-3 text-xs tracking-wider">ACTA DE LEGALIZACIÓN DE FIRMAS (AUTÉNTICA NOTARIAL)</p>
                             <p class="text-justify text-[11pt] leading-relaxed mb-6">En la ciudad de Guatemala, el día <strong>${dia} de ${mes} de ${anio}</strong>, como Notario(a), <strong>DOY FE:</strong> Que las firmas que anteceden son AUTÉNTICAS por haber sido puestas el día de hoy en mi presencia por los señores <strong>${invNom.toUpperCase()}</strong> y <strong>${deuNom.toUpperCase()}</strong>, quienes firman nuevamente la presente acta de legalización junto con el Notario que de todo lo relacionado da fe.</p>
                             
-                            <!-- ESPACIO AMPLIADO PARA FIRMAS FÍSICAS Y SELLO (pt-20) -->
-                            <div class="grid grid-cols-3 gap-6 text-center pt-20">
-                                <div>
-                                    <div class="border-t border-black pt-2 text-[10px] font-bold">Firma del Inversionista</div>
+                            <!-- ESPACIO AMPLIADO Y AMPLIO DE FIRMAS Y SELLO (pt-28 = 112px) -->
+                            <div class="grid grid-cols-3 gap-6 text-center pt-28 mt-8">
+                                <div class="flex flex-col justify-end min-h-[120px]">
+                                    <div class="border-t-2 border-black pt-2 text-[10px] font-bold uppercase">Firma del Inversionista</div>
                                 </div>
-                                <div>
-                                    <div class="border-t border-black pt-2 text-[10px] font-bold">Firma del Deudor</div>
+                                <div class="flex flex-col justify-end min-h-[120px]">
+                                    <div class="border-t-2 border-black pt-2 text-[10px] font-bold uppercase">Firma del Deudor</div>
                                 </div>
-                                <div>
-                                    <div class="border-t border-black pt-2 text-[10px] font-bold">ANTE MÍ:<br>Firma y Sello del Notario</div>
+                                <div class="flex flex-col justify-end min-h-[120px]">
+                                    <div class="border-t-2 border-black pt-2 text-[10px] font-bold uppercase">ANTE MÍ:<br><span class="text-[9px] font-semibold">Firma y Sello del Notario</span></div>
                                 </div>
                             </div>
                         </div>
@@ -2350,10 +2350,16 @@
                         .grid-cols-2 { grid-template-columns: 1fr 1fr; }
                         .grid-cols-3 { grid-template-columns: 1fr 1fr 1fr; }
                         .gap-8 { gap: 32px; }
-                        .gap-4 { gap: 16px; }
+                        .gap-6 { gap: 24px; }
                         .border-t { border-top: 1px solid black; }
-                        .border-t-2 { border-top: 2px dashed #666; }
-                        .pt-20 { padding-top: 80px; }
+                        .border-t-2 { border-top: 2px solid black; }
+                        .border-t-dashed { border-top: 2px dashed #666; }
+                        .pt-28 { padding-top: 112px !important; }
+                        .mt-8 { margin-top: 32px !important; }
+                        .flex { display: flex; }
+                        .flex-col { flex-direction: column; }
+                        .justify-end { justify-content: flex-end; }
+                        .min-h-\\[120px\\] { min-height: 120px !important; height: 120px !important; }
                     </style>
                 </head>
                 <body>
